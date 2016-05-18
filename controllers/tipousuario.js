@@ -39,6 +39,30 @@ var create 			= function(request, response){
 		response.jsonp(error);
 	});
 };
+var updateAll 		= function(request, response){
+	response.status(500).jsonp({ response : "Implementar updateAll" });
+};
+var updatePart 		= function(request, response){
+	response.status(500).jsonp({ response : "Implementar updatePart" });
+};
+var deleteById 		= function(request, response){
+	sequelize.transaction(
+	).then(function(transaction){
+		tipousuario.destroy(
+			{ where : { tipousuarioid : request.params.tipousuarioid }, transaction : transaction }
+		).then(function( rowdeleted ){
+			if(rowdeleted != request.params.tipousuarioid ){
+				transaction.rollback();
+				response.status(500).jsonp({ response : "No se ha podido eliminar el tipousuario" });
+			} else {
+				transaction.commit();
+				response.status(200).jsonp([{ tipousuario : "/tipousuario/" + request.params.tipousuarioid }]);
+			}
+		});
+	}).catch(function(error){
+		response.status(500).jsonp(error);
+	});
+};
 
 /**
  * Export functions
@@ -47,3 +71,6 @@ var create 			= function(request, response){
 exports.all 		= all;
 exports.findById 	= findById;
 exports.create 		= create;
+exports.updateAll 	= updateAll;
+exports.updatePart 	= updatePart;
+exports.deleteById 	= deleteById;
