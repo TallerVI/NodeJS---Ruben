@@ -66,7 +66,7 @@ var deleteById 		= function(request, response){
 		historialprecio.destroy(
 			{ where : { historialprecioid : request.params.historialprecioid }, transaction : transaction }
 		).then(function( rowdeleted ){
-			if(rowdeleted != request.params.historialprecioid ){
+			if( rowdeleted == 0 ){
 				transaction.rollback();
 				response.status(500).jsonp({ response : "No se ha podido eliminar el historialprecio" });
 			} else {

@@ -51,7 +51,7 @@ var deleteById 		= function(request, response){
 		tipousuario.destroy(
 			{ where : { tipousuarioid : request.params.tipousuarioid }, transaction : transaction }
 		).then(function( rowdeleted ){
-			if(rowdeleted != request.params.tipousuarioid ){
+			if( rowdeleted == 0 ){
 				transaction.rollback();
 				response.status(500).jsonp({ response : "No se ha podido eliminar el tipousuario" });
 			} else {

@@ -76,7 +76,7 @@ var deleteById 		= function(request, response){
 		usuario.destroy(
 			{ where : { usuarioid : request.params.usuarioid }, transaction : transaction }
 		).then(function( rowdeleted ){
-			if(rowdeleted != request.params.usuarioid ){
+			if( rowdeleted == 0 ){
 				transaction.rollback();
 				response.status(500).jsonp({ response : "No se ha podido eliminar el usuario" });
 			} else {
