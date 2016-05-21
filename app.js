@@ -21,7 +21,6 @@ appFasplate.use(express.logger('dev'));
 appFasplate.use(express.bodyParser());
 appFasplate.use(express.methodOverride());
 appFasplate.use(appFasplate.router);
-appFasplate.use(require('./routes/historialprecio'));
 appFasplate.use(require('./routes/tipousuario'));
 appFasplate.use(require('./routes/usuario'));
 
