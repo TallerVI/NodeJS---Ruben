@@ -40,7 +40,27 @@ var create 			= function(request, response){
 	});
 };
 var updateAll 		= function(request, response){
-	response.status(500).jsonp({ response : "Implementar updateAll" });
+	sequelize.transaction(
+	).then(function(transaction){
+		tipousuario.update({ 
+		    	 descripcion : request.body.descripcion
+		     },
+			{ where : { tipousuarioid : request.body.tipousuarioid } }, 
+			{ transaction : transaction }
+		).then(function( rowUpdated ){
+			if(rowUpdated.pop() == 0){
+				transaction.rollback();
+				response.status(500).jsonp({ response : "No se ha podido actualizar tipousuario" });
+			} else {
+				transaction.commit();
+				tipousuario.findById(request.body.tipousuarioid).then(function(tipousuario){
+					response.status(200).jsonp(tipousuario);
+				});
+			}
+		});
+	}).catch(function(error){
+		response.status(500).jsonp(error);
+	});
 };
 var updatePart 		= function(request, response){
 	response.status(500).jsonp({ response : "Implementar updatePart" });

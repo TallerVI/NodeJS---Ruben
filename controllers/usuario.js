@@ -65,7 +65,31 @@ var create 			= function(request, response){
 	});
 };
 var updateAll 		= function(request, response){
-	response.status(500).jsonp({ response : "Implementar updateAll" });
+	sequelize.transaction(
+	).then(function(transaction){
+		usuario.update({ 
+		    	 nombre : request.body.nombre,
+		    	 password : request.body.password,
+		    	 tipousuarioid : request.body.tipousuarioid,
+		    	 maquinaestadoid : request.body.maquinaestadoid,
+		    	 username : request.body.username
+		     },
+			{ where : { usuarioid : request.body.usuarioid } }, 
+			{ transaction : transaction }
+		).then(function( rowUpdated ){
+			if(rowUpdated.pop() == 0){
+				transaction.rollback();
+				response.status(500).jsonp({ response : "No se ha podido actualizar usuario" });
+			} else {
+				transaction.commit();
+				usuario.findById(request.body.usuarioid).then(function(usuario){
+					response.status(200).jsonp(usuario);
+				});
+			}
+		});
+	}).catch(function(error){
+		response.status(500).jsonp(error);
+	});
 };
 var updatePart 		= function(request, response){
 	response.status(500).jsonp({ response : "Implementar updatePart" });
