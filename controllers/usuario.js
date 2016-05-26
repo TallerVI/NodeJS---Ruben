@@ -113,6 +113,35 @@ var deleteById 		= function(request, response){
 	});
 };
 
+var updatePassword = function(request, response){
+	sequelize.transaction(
+	).then(function(transaction){
+		usuario.findById(request.body.usuarioid).then(function(usuario){
+			if(request.body.password == usuario.password){
+				usuario.update({ 
+				    	password : request.body.newpassword,
+					},
+					{ where : { usuarioid : request.body.usuarioid } }, 
+					{ transaction : transaction }
+				).then(function( usuario ){
+					item['dataValues'].tipousuario = "/tipousuario/" + item['dataValues'].tipousuarioid;
+					item['dataValues'].maquinaestado = "/maquinaestado/" + item['dataValues'].maquinaestadoid;
+					delete item['dataValues'].articuloid;
+					delete item['dataValues'].maquinaestadoid;
+					delete item['dataValues'].password;
+					transaction.commit();
+					response.status(200).jsonp(usuario);
+				});
+			} else {
+				response.status(500).jsonp({ error : 'El password anterior recibido no coincide con el actual' });
+			}
+		});
+		
+	}).catch(function(error){
+		response.status(500).jsonp(error);
+	});
+};
+
 /**
  * Export functions
  * 
@@ -123,3 +152,4 @@ exports.create 		= create;
 exports.updateAll 	= updateAll;
 exports.updatePart 	= updatePart;
 exports.deleteById 	= deleteById;
+exports.updatePassword 	= updatePassword;
