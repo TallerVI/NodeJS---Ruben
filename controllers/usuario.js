@@ -8,15 +8,17 @@
  * */
 var sequelize		= require ("../app").get("sequelize");
 var usuario		= sequelize.import("../models/usuarios");
+var host			= require ("./host");
 
 /** RUBEN
  * Private Functions 
  * */
 var all 			= function(request, response){
+	var h = host.getHost(request, response);
 	usuario.findAll().then(function(usuario){
 		usuario.forEach(function(item){
-			item['dataValues'].tipousuario = "/tipousuario/" + item['dataValues'].tipousuarioid;
-			item['dataValues'].maquinaestado = "/maquinaestado/" + item['dataValues'].maquinaestadoid;
+			item['dataValues'].tipousuario = h + "/tipousuario/" + item['dataValues'].tipousuarioid;
+			item['dataValues'].maquinaestado = h + "/maquinaestado/" + item['dataValues'].maquinaestadoid;
 			delete item['dataValues'].articuloid;
 			delete item['dataValues'].maquinaestadoid;
 			delete item['dataValues'].password;
@@ -25,14 +27,15 @@ var all 			= function(request, response){
 	});
 };
 var findById 		= function(request, response){
+	var h = host.getHost(request, response);
 	usuario.findAll({
 		where : {
 			usuarioid : request.params.usuarioid
 		}
 	}).then(function(usuario){
 		usuario.forEach(function(item){
-			item['dataValues'].tipousuario = "/tipousuario/" + item['dataValues'].tipousuarioid;
-			item['dataValues'].maquinaestado = "/maquinaestado/" + item['dataValues'].maquinaestadoid;
+			item['dataValues'].tipousuario = h + "/tipousuario/" + item['dataValues'].tipousuarioid;
+			item['dataValues'].maquinaestado = h + "/maquinaestado/" + item['dataValues'].maquinaestadoid;
 			delete item['dataValues'].articuloid;
 			delete item['dataValues'].maquinaestadoid;
 			delete item['dataValues'].password;
@@ -41,6 +44,7 @@ var findById 		= function(request, response){
 	});
 };
 var create 			= function(request, response){
+	var h = host.getHost(request, response);
 	sequelize.transaction(function(transaction){
 		return Promise.all([
 		     usuario.create({ 
@@ -53,8 +57,8 @@ var create 			= function(request, response){
 		]);
 	}).then(function(usuario){
 		usuario.forEach(function(item){
-			item['dataValues'].tipousuario = "/tipousuario/" + item['dataValues'].tipousuarioid;
-			item['dataValues'].maquinaestado = "/maquinaestado/" + item['dataValues'].maquinaestadoid;
+			item['dataValues'].tipousuario = h + "/tipousuario/" + item['dataValues'].tipousuarioid;
+			item['dataValues'].maquinaestado = h + "/maquinaestado/" + item['dataValues'].maquinaestadoid;
 			delete item['dataValues'].articuloid;
 			delete item['dataValues'].maquinaestadoid;
 			delete item['dataValues'].password;
@@ -65,6 +69,7 @@ var create 			= function(request, response){
 	});
 };
 var updateAll 		= function(request, response){
+	var h = host.getHost(request, response);
 	sequelize.transaction(
 	).then(function(transaction){
 		usuario.update({ 
@@ -92,9 +97,11 @@ var updateAll 		= function(request, response){
 	});
 };
 var updatePart 		= function(request, response){
+	var h = host.getHost(request, response);
 	response.status(500).jsonp({ response : "Implementar updatePart" });
 };
 var deleteById 		= function(request, response){
+	var h = host.getHost(request, response);
 	sequelize.transaction(
 	).then(function(transaction){
 		usuario.destroy(
@@ -105,7 +112,7 @@ var deleteById 		= function(request, response){
 				response.status(500).jsonp({ response : "No se ha podido eliminar el usuario" });
 			} else {
 				transaction.commit();
-				response.status(200).jsonp([{ usuario : "/usuario/" + request.params.usuarioid }]);
+				response.status(200).jsonp([{ usuario : h + "/usuario/" + request.params.usuarioid }]);
 			}
 		});
 	}).catch(function(error){
@@ -114,29 +121,27 @@ var deleteById 		= function(request, response){
 };
 
 var updatePassword = function(request, response){
+	var h = host.getHost(request, response);
 	sequelize.transaction(
 	).then(function(transaction){
 		usuario.findById(request.body.usuarioid).then(function(usuario){
-			if(request.body.password == usuario.password){
-				usuario.update({ 
-				    	password : request.body.newpassword,
-					},
-					{ where : { usuarioid : request.body.usuarioid } }, 
-					{ transaction : transaction }
-				).then(function( usuario ){
-					item['dataValues'].tipousuario = "/tipousuario/" + item['dataValues'].tipousuarioid;
-					item['dataValues'].maquinaestado = "/maquinaestado/" + item['dataValues'].maquinaestadoid;
-					delete item['dataValues'].articuloid;
-					delete item['dataValues'].maquinaestadoid;
-					delete item['dataValues'].password;
-					transaction.commit();
-					response.status(200).jsonp(usuario);
-				});
-			} else {
-				response.status(500).jsonp({ error : 'El password anterior recibido no coincide con el actual' });
-			}
+			usuario.update({ 
+			    	password : request.body.password,
+				},
+				{ where : { usuarioid : request.body.usuarioid } }, 
+				{ transaction : transaction }
+			).then(function( usuario ){
+				item['dataValues'].tipousuario = h + "/tipousuario/" + item['dataValues'].tipousuarioid;
+				item['dataValues'].maquinaestado = h + "/maquinaestado/" + item['dataValues'].maquinaestadoid;
+				delete item['dataValues'].articuloid;
+				delete item['dataValues'].maquinaestadoid;
+				delete item['dataValues'].password;
+				transaction.commit();
+				response.status(200).jsonp(usuario);
+			}).catch(function(error){
+				response.status(500).jsonp({ error : "No ha sido posible cambiar la contraseña "});
+			});
 		});
-		
 	}).catch(function(error){
 		response.status(500).jsonp(error);
 	});
